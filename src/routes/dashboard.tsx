@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, TrendingUp, Code2, MessageSquare, Sparkles, Target, Brain } from "lucide-react";
 import { BentoCard } from "@/components/BentoCard";
@@ -28,9 +29,31 @@ const SCORES = [
 
 // Radar polygon
 const RADAR_AXES = ["Tech", "Comm", "Depth", "Speed", "Calm", "Fit"];
-const RADAR_DATA = [82, 65, 70, 60, 58, 74];
+const DEFAULT_RADAR_DATA = [82, 65, 70, 60, 58, 74];
 
 function Dashboard() {
+  const [data, setData] = useState<any>(null);
+
+  useEffect(() => {
+    const saved = sessionStorage.getItem("ai_analysis_result");
+    if (saved) {
+      try {
+        setData(JSON.parse(saved));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
+
+  const hiringProbability = data?.hiringProbability ?? 68;
+  const scores = data?.scores ?? SCORES;
+  const radarData = data?.radarData ?? DEFAULT_RADAR_DATA;
+  const skills = data?.skills ?? SKILLS;
+  const strengths = data?.strengths ?? ["React mastery", "Clean code", "Product thinking"];
+  const techStack = data?.techStack ?? ["React", "Node", "TypeScript", "Postgres"];
+  const watchOuts = data?.watchOuts ?? ["System design depth", "Verbose answers", "DSA recall"];
+  const missingForRole = data?.missingForRole ?? ["Docker", "System Design", "Leadership"];
+
   return (
     <div className="mx-auto max-w-[1400px] px-6 pb-24">
       <div className="flex items-end justify-between mb-8">
@@ -48,15 +71,15 @@ function Dashboard() {
               <h3 className="font-display text-xl font-bold text-slate-900">Cognitive Diagnostics</h3>
             </div>
             <div className="text-right">
-              <div className="font-display text-3xl font-bold text-[#6C63FF]">68%</div>
+              <div className="font-display text-3xl font-bold text-[#6C63FF]">{hiringProbability}%</div>
               <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Hiring Probability
               </div>
             </div>
           </div>
           <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-6 place-items-center">
-            {SCORES.map((s) => (
-              <CircleScore key={s.l} value={s.v} label={s.l} color={s.c} />
+            {scores.map((s: any, i: number) => (
+              <CircleScore key={s.l || i} value={s.v} label={s.l} color={s.c || SCORES[i]?.c || "brand-primary"} />
             ))}
           </div>
         </BentoCard>
@@ -70,7 +93,7 @@ function Dashboard() {
             <h3 className="font-display text-xl font-bold text-slate-900">Skill Lattice</h3>
           </div>
           <div className="mt-4 grid place-items-center">
-            <Radar values={RADAR_DATA} axes={RADAR_AXES} />
+            <Radar values={radarData} axes={RADAR_AXES} />
           </div>
         </BentoCard>
 
@@ -90,7 +113,7 @@ function Dashboard() {
             </div>
           </div>
           <div className="mt-8 space-y-4">
-            {SKILLS.map((s, i) => (
+            {skills.map((s: any, i: number) => (
               <motion.div
                 key={s.name}
                 initial={{ opacity: 0, x: -10 }}
@@ -122,10 +145,10 @@ function Dashboard() {
         </BentoCard>
 
         {/* Strengths */}
-        <Mini icon={Sparkles} title="Strengths" items={["React mastery", "Clean code", "Product thinking"]} c="brand-primary" />
-        <Mini icon={Code2} title="Tech Stack" items={["React", "Node", "TypeScript", "Postgres"]} c="brand-secondary" />
-        <Mini icon={MessageSquare} title="Watch-outs" items={["System design depth", "Verbose answers", "DSA recall"]} c="brand-accent" />
-        <Mini icon={Target} title="Missing for Role" items={["Docker", "System Design", "Leadership"]} c="danger" />
+        <Mini icon={Sparkles} title="Strengths" items={strengths} c="brand-primary" />
+        <Mini icon={Code2} title="Tech Stack" items={techStack} c="brand-secondary" />
+        <Mini icon={MessageSquare} title="Watch-outs" items={watchOuts} c="brand-accent" />
+        <Mini icon={Target} title="Missing for Role" items={missingForRole} c="danger" />
       </div>
 
       <div className="mt-10 flex justify-end">

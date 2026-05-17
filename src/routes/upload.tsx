@@ -3,7 +3,8 @@ import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, FileText, Briefcase, Target, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 import { BentoCard } from "@/components/BentoCard";
-
+import { analyzeProfile } from "../server/analyze";
+import { toast } from "sonner";
 export const Route = createFileRoute("/upload")({
   component: UploadPage,
   head: () => ({
@@ -30,12 +31,37 @@ function UploadPage() {
   const [stage, setStage] = useState(0);
   const ready = resumeFile !== null && jdText.trim().length > 10 && role.trim().length > 1;
 
-  useEffect(() => {
-    if (!scanning) return;
-    if (stage >= STAGES.length - 1) return;
-    const t = setTimeout(() => setStage((s) => s + 1), 900);
-    return () => clearTimeout(t);
-  }, [scanning, stage]);
+  const handleAnalyze = async () => {
+    if (!ready) return;
+    setScanning(true);
+    setStage(0);
+
+    // Simulate progress while waiting for the API
+    const progressInterval = setInterval(() => {
+      setStage((s) => Math.min(s + 1, STAGES.length - 2));
+    }, 1500);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", resumeFile);
+      formData.append("jd", jdText);
+      formData.append("role", role);
+
+      const result = await analyzeProfile({ data: formData });
+      
+      clearInterval(progressInterval);
+      setStage(STAGES.length - 1); // "Analysis Complete"
+
+      // Store the result globally
+      sessionStorage.setItem("ai_analysis_result", JSON.stringify(result));
+    } catch (error: any) {
+      clearInterval(progressInterval);
+      setScanning(false);
+      setStage(0);
+      console.error(error);
+      toast.error(error.message || "Failed to analyze profile.");
+    }
+  };
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 pb-24">
@@ -116,7 +142,7 @@ function UploadPage() {
               </div>
               <button
                 disabled={!ready}
-                onClick={() => setScanning(true)}
+                onClick={handleAnalyze}
                 className="mt-6 w-full flex items-center justify-center gap-2 rounded-xl bg-[#6C63FF] px-6 py-3.5 text-sm font-semibold text-white shadow-md disabled:opacity-50 disabled:shadow-none hover:bg-[#5a52d5] transition-colors"
               >
                 Analyze Profile
