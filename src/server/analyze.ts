@@ -1,22 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
-
-// Simple helper to extract pseudo-skills from text
-function extractKeywords(text: string): string[] {
-  const commonTech = ["react", "node", "typescript", "javascript", "python", "java", "sql", "aws", "docker", "kubernetes", "go", "c++", "rust", "vue", "angular", "system design", "leadership", "agile", "communication", "figma", "design", "css", "html"];
-  const words = text.toLowerCase().split(/[\s,.-]+/);
-  const found = new Set<string>();
-  
-  words.forEach(w => {
-    if (commonTech.includes(w)) found.add(w.charAt(0).toUpperCase() + w.slice(1));
-  });
-  
-  if (found.size < 4) {
-    found.add("Problem Solving");
-    found.add("Team Collaboration");
-    found.add("Agile Methodologies");
-  }
-  return Array.from(found);
-}
+import { GoogleGenAI } from "@google/genai";
+import { promises as fs } from "fs";
+import path from "path";
+import os from "os";
 
 export const analyzeProfile = createServerFn({ method: "POST" }).handler(
   async ({ data }) => {
@@ -33,58 +19,75 @@ export const analyzeProfile = createServerFn({ method: "POST" }).handler(
         throw new Error("Missing required fields");
       }
 
-      // Simulate network/processing delay to make it feel like AI
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      const keywords = extractKeywords(jd);
-      const isSenior = role.toLowerCase().includes("senior") || role.toLowerCase().includes("lead") || role.toLowerCase().includes("principal");
-
-      // Generate realistic mock data
-      const hiringProb = Math.floor(Math.random() * 30) + 55; // 55-85
-      
-      const skills = keywords.slice(0, 6).map(k => ({
-        name: k,
-        level: Math.floor(Math.random() * 40) + 50 // 50-90
-      }));
-
-      // Fallback skills if empty
-      if (skills.length === 0) {
-        skills.push({ name: "General Programming", level: 85 });
+      const apiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+      if (!apiKey || apiKey === "your_gemini_api_key_here") {
+        throw new Error("Gemini API key is missing or invalid. Please add VITE_GEMINI_API_KEY to your .env file.");
       }
 
-      return {
-        hiringProbability: hiringProb,
-        scores: [
-          { l: "Technical", v: Math.floor(Math.random() * 20) + 70 },
-          { l: "Communication", v: Math.floor(Math.random() * 20) + 65 },
-          { l: "Confidence", v: Math.floor(Math.random() * 20) + 60 },
-          { l: "Role Match", v: hiringProb + 5 }
+      const ai = new GoogleGenAI({ apiKey });
+
+      // Save file temporarily to upload it using File API
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const tempPath = path.join(os.tmpdir(), file.name.replace(/[^a-zA-Z0-9.-]/g, "_"));
+      await fs.writeFile(tempPath, buffer);
+
+      console.log(`Uploading ${file.name} to Gemini...`);
+      const uploadResponse = await ai.files.upload({
+        file: tempPath,
+        mimeType: file.type || "application/pdf",
+      });
+
+      console.log("Generating analysis...");
+
+      const prompt = `
+You are an expert technical recruiter and AI interviewer. Analyze the attached resume against the following Job Description and Target Role.
+Target Role: ${role}
+Job Description:
+${jd}
+
+Output the analysis strictly as a JSON object matching this schema exactly. Do NOT use markdown code blocks like \`\`\`json, just output the raw JSON object.
+{
+  "hiringProbability": number (0-100),
+  "scores": [
+    { "l": "Technical", "v": number (0-100) },
+    { "l": "Communication", "v": number (0-100) },
+    { "l": "Confidence", "v": number (0-100) },
+    { "l": "Role Match", "v": number (0-100) }
+  ],
+  "radarData": [number (Tech 0-100), number (Comm 0-100), number (Depth 0-100), number (Speed 0-100), number (Calm 0-100), number (Fit 0-100)],
+  "skills": [
+    { "name": string, "level": number (0-100) } // At most 6 key skills mentioned in JD
+  ],
+  "strengths": [string], // 3 items
+  "techStack": [string], // 3-4 items
+  "watchOuts": [string], // 3 items (weaknesses or areas of concern)
+  "missingForRole": [string] // 3 items (skills in JD not in resume)
+}
+`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [
+          uploadResponse,
+          prompt
         ],
-        radarData: [
-          Math.floor(Math.random() * 20) + 70, // Tech
-          Math.floor(Math.random() * 20) + 65, // Comm
-          isSenior ? Math.floor(Math.random() * 20) + 75 : Math.floor(Math.random() * 20) + 50, // Depth
-          Math.floor(Math.random() * 20) + 60, // Speed
-          Math.floor(Math.random() * 20) + 70, // Calm
-          hiringProb + 2 // Fit
-        ],
-        skills,
-        strengths: [
-          `${skills[0]?.name || "Core tech"} mastery`,
-          isSenior ? "System Architecture" : "Clean code practices",
-          "Adaptability"
-        ],
-        techStack: skills.map(s => s.name).slice(0, 4),
-        watchOuts: [
-          "May need ramp-up on specific internal tools",
-          isSenior ? "Delegation vs hands-on balance" : "Advanced system design",
-          "Handling ambiguous requirements"
-        ],
-        missingForRole: keywords.slice(4, 7).length > 0 ? keywords.slice(4, 7) : ["Advanced CI/CD", "Performance optimization"]
-      };
+        config: {
+          responseMimeType: "application/json",
+        }
+      });
+
+      // Cleanup temp file
+      await fs.unlink(tempPath).catch(console.error);
+
+      if (!response.text) {
+         throw new Error("No response from AI");
+      }
+
+      const jsonStr = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+      return JSON.parse(jsonStr);
 
     } catch (err: any) {
-      console.error("Mock Analysis Error:", err);
+      console.error("Analysis Error:", err);
       throw new Error(err.message || "Failed to analyze profile");
     }
   }
