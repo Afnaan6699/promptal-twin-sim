@@ -1,0 +1,254 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ──────────────────────────────────────────────────────────────
+   PROMPTAL AI — INTERVIEW TWIN
+   Cinematic futuristic OS aesthetic.
+   Electric blue, neon purple, cyan glow, subtle pink.
+   ────────────────────────────────────────────────────────────── */
+
+@theme inline {
+  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-electric: var(--electric);
+  --color-neon: var(--neon);
+  --color-cyan-glow: var(--cyan-glow);
+  --color-pink-glow: var(--pink-glow);
+  --color-hud: var(--hud);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+
+  --color-chart-1: var(--electric);
+  --color-chart-2: var(--neon);
+  --color-chart-3: var(--cyan-glow);
+  --color-chart-4: var(--pink-glow);
+  --color-chart-5: var(--success);
+}
+
+:root {
+  --radius: 1rem;
+
+  /* Deep space dark */
+  --background: oklch(0.13 0.03 270);
+  --foreground: oklch(0.97 0.01 250);
+  --card: oklch(0.18 0.04 270 / 0.6);
+  --card-foreground: oklch(0.97 0.01 250);
+  --popover: oklch(0.17 0.04 270);
+  --popover-foreground: oklch(0.97 0.01 250);
+
+  --primary: oklch(0.72 0.22 260);          /* electric blue */
+  --primary-foreground: oklch(0.1 0.02 270);
+  --secondary: oklch(0.22 0.05 280 / 0.7);
+  --secondary-foreground: oklch(0.97 0.01 250);
+  --muted: oklch(0.22 0.04 270 / 0.6);
+  --muted-foreground: oklch(0.7 0.04 260);
+  --accent: oklch(0.68 0.25 310);           /* neon purple */
+  --accent-foreground: oklch(0.97 0.01 250);
+  --destructive: oklch(0.65 0.28 25);
+  --destructive-foreground: oklch(0.98 0 0);
+
+  --border: oklch(0.7 0.15 270 / 0.18);
+  --input: oklch(0.3 0.05 270 / 0.5);
+  --ring: oklch(0.72 0.22 260);
+
+  /* Futuristic accents */
+  --electric: oklch(0.72 0.22 260);
+  --neon: oklch(0.68 0.25 310);
+  --cyan-glow: oklch(0.85 0.18 200);
+  --pink-glow: oklch(0.78 0.22 0);
+  --hud: oklch(0.9 0.15 200);
+  --danger: oklch(0.68 0.28 20);
+  --success: oklch(0.78 0.2 160);
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, oklch(0.72 0.22 260), oklch(0.68 0.25 310));
+  --gradient-hud: linear-gradient(135deg, oklch(0.85 0.18 200), oklch(0.72 0.22 260));
+  --gradient-aurora: linear-gradient(135deg, oklch(0.72 0.22 260) 0%, oklch(0.68 0.25 310) 50%, oklch(0.78 0.22 0) 100%);
+  --gradient-radial-glow: radial-gradient(circle at 50% 0%, oklch(0.72 0.22 260 / 0.35), transparent 60%);
+
+  /* Shadows / glows */
+  --glow-electric: 0 0 30px oklch(0.72 0.22 260 / 0.5), 0 0 60px oklch(0.72 0.22 260 / 0.25);
+  --glow-neon: 0 0 30px oklch(0.68 0.25 310 / 0.5), 0 0 60px oklch(0.68 0.25 310 / 0.25);
+  --glow-cyan: 0 0 30px oklch(0.85 0.18 200 / 0.5);
+  --glow-danger: 0 0 40px oklch(0.68 0.28 20 / 0.55);
+
+  --shadow-card: 0 20px 60px -20px oklch(0.05 0 0 / 0.6);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html, body, #root {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    min-height: 100%;
+  }
+
+  body {
+    background:
+      radial-gradient(1200px 600px at 20% -10%, oklch(0.72 0.22 260 / 0.18), transparent 60%),
+      radial-gradient(900px 500px at 90% 10%, oklch(0.68 0.25 310 / 0.18), transparent 60%),
+      radial-gradient(800px 600px at 50% 110%, oklch(0.78 0.22 0 / 0.12), transparent 60%),
+      var(--background);
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background: oklch(0.72 0.22 260 / 0.45);
+    color: white;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: oklch(0.13 0.03 270); }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--electric), var(--neon));
+    border-radius: 10px;
+  }
+}
+
+/* ── Utility classes for the futuristic UI ───────────────── */
+
+@utility glass {
+  background: linear-gradient(135deg, oklch(1 0 0 / 0.06), oklch(1 0 0 / 0.02));
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid oklch(1 0 0 / 0.08);
+}
+
+@utility glass-strong {
+  background: linear-gradient(135deg, oklch(0.2 0.04 270 / 0.8), oklch(0.16 0.04 280 / 0.7));
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid oklch(1 0 0 / 0.1);
+}
+
+@utility gradient-text {
+  background: var(--gradient-aurora);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility text-glow {
+  text-shadow: 0 0 24px oklch(0.72 0.22 260 / 0.65), 0 0 8px oklch(0.85 0.18 200 / 0.5);
+}
+
+@utility hud-border {
+  position: relative;
+  border: 1px solid oklch(0.85 0.18 200 / 0.25);
+  box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.03), 0 0 24px -8px oklch(0.72 0.22 260 / 0.4);
+}
+
+@utility grid-bg {
+  background-image:
+    linear-gradient(oklch(0.72 0.22 260 / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.72 0.22 260 / 0.07) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+}
+
+@utility neon-border {
+  position: relative;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, oklch(1 0 0 / 0.04), oklch(1 0 0 / 0.01));
+}
+@utility neon-border-glow {
+  box-shadow:
+    inset 0 0 0 1px oklch(1 0 0 / 0.06),
+    0 0 0 1px oklch(0.72 0.22 260 / 0.4),
+    0 0 28px oklch(0.72 0.22 260 / 0.25),
+    0 0 60px oklch(0.68 0.25 310 / 0.15);
+}
+
+/* ── Keyframes ───────────────────────────────────────────── */
+
+@keyframes float-orb {
+  0%, 100% { transform: translate3d(0,0,0) scale(1); }
+  50% { transform: translate3d(20px,-30px,0) scale(1.06); }
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+@keyframes scan {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes grid-drift {
+  0% { background-position: 0 0; }
+  100% { background-position: 48px 48px; }
+}
+@keyframes voice-wave {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+@keyframes heartbeat {
+  0%, 60%, 100% { transform: scale(1); }
+  30% { transform: scale(1.06); }
+}
+@keyframes blink-caret {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+.animate-float-orb { animation: float-orb 9s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 2.4s ease-in-out infinite; }
+.animate-scan { animation: scan 2.4s linear infinite; }
+.animate-grid-drift { animation: grid-drift 18s linear infinite; }
+.animate-spin-slow { animation: spin-slow 24s linear infinite; }
+.animate-heartbeat { animation: heartbeat 1.1s ease-in-out infinite; }
+.animate-caret { animation: blink-caret 1s steps(1) infinite; }
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.12), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2.2s linear infinite;
+}
