@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { generateInterviewQuestion } from '../services/featherlessAPI';
+import { generateInterviewQuestion, getAIFeedback } from '../services/featherlessAPI';
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Mic, Video, Activity, StopCircle, User } from "lucide-react";
@@ -43,15 +43,27 @@ function Interview() {
   const recognitionRef = useRef<any>(null);
   const [currentQuestion, setCurrentQuestion] = useState("Loading your question...");
   const [isLoadingQ, setIsLoadingQ] = useState(false);
+  const [askedQuestions, setAskedQuestions] = useState<string[]>([]);
+  const [aiFeedback, setAiFeedback] = useState("");
+  const speakText = (text: string) => {
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 0.9;
+  utterance.pitch = 1;
+  window.speechSynthesis.speak(utterance);
+};
 
   const loadNextQuestion = async () => {
-    setIsLoadingQ(true);
-    const resume = localStorage.getItem("resumeText") ?? "React, Node.js developer";
-    const role = localStorage.getItem("jobRole") ?? "Frontend Developer";
-    const result = await generateInterviewQuestion(resume, role);
-    setCurrentQuestion(result.question);
-    setIsLoadingQ(false);
-  };
+  setIsLoadingQ(true);
+  setAiFeedback("");
+  const resume = localStorage.getItem("resumeText") ?? "React, Node.js developer";
+  const role = localStorage.getItem("jobRole") ?? "Frontend Developer";
+  const result = await generateInterviewQuestion(resume, role, askedQuestions);
+  setAskedQuestions(prev => [...prev, result.question]);
+  setCurrentQuestion(result.question);
+  speakText(result.question);
+  setIsLoadingQ(false);
+};
   useEffect(() => {
     loadNextQuestion();
   }, []);
@@ -71,9 +83,14 @@ function Interview() {
         setTranscript(fullTranscript);
       };
 
-      recognition.onend = () => {
-        setIsListening(false);
-      };
+      recognition.onend = async () => {
+      setIsListening(false);
+  if (transcript.trim().length > 5) {
+    const feedback = await getAIFeedback(currentQuestion, transcript);
+    setAiFeedback(feedback.feedback);
+    speakText(feedback.feedback);
+  }
+};
 
       recognitionRef.current = recognition;
     }
@@ -230,6 +247,11 @@ function Interview() {
             <div className="flex-1 bg-slate-50 rounded-xl p-4 border border-slate-100 overflow-y-auto min-h-[140px] text-sm text-slate-600 leading-relaxed font-medium">
               {transcript || <span className="text-slate-400 italic">Click the microphone to start speaking...</span>}
             </div>
+            {aiFeedback && (
+  <div className="mt-2 p-3 rounded-lg bg-green-900/30 text-green-400 text-sm">
+    <span className="font-bold">AI Interviewer: </span>{aiFeedback}
+  </div>
+)}
           </BentoCard>
         </div>
       </div>
