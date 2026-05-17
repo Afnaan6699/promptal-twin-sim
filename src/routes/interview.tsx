@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { generateInterviewQuestion } from '../services/featherlessAPI';
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Mic, Video, Activity, StopCircle, User } from "lucide-react";
 import { BentoCard } from "@/components/BentoCard";
@@ -10,13 +11,7 @@ export const Route = createFileRoute("/interview")({
   head: () => ({ meta: [{ title: "Live Session · Promptal AI" }] }),
 });
 
-const QUESTIONS = [
-  "I noticed React and Node in your projects. Why Node over Django?",
-  "Walk me through how you'd architect a real-time chat for 1M concurrent users.",
-  "Your resume claims Python expertise — explain decorators and the GIL.",
-  "Tell me about a time you shipped something risky. What broke?",
-  "Can you redo that answer in 30 seconds?",
-];
+
 
 function useBiometricAnalysis(stream: MediaStream | null, videoElement: HTMLVideoElement | null) {
   const [metrics, setMetrics] = useState({ voice: 72, pace: 65, clarity: 81 });
@@ -46,14 +41,28 @@ function Interview() {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const recognitionRef = useRef<any>(null);
+  const [currentQuestion, setCurrentQuestion] = useState("Loading your question...");
+  const [isLoadingQ, setIsLoadingQ] = useState(false);
+
+  const loadNextQuestion = async () => {
+    setIsLoadingQ(true);
+    const resume = localStorage.getItem("resumeText") ?? "React, Node.js developer";
+    const role = localStorage.getItem("jobRole") ?? "Frontend Developer";
+    const result = await generateInterviewQuestion(resume, role);
+    setCurrentQuestion(result.question);
+    setIsLoadingQ(false);
+  };
+  useEffect(() => {
+    loadNextQuestion();
+  }, []);
 
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      
+
       recognition.onresult = (event: any) => {
         let fullTranscript = "";
         for (let i = 0; i < event.results.length; i++) {
@@ -65,7 +74,7 @@ function Interview() {
       recognition.onend = () => {
         setIsListening(false);
       };
-      
+
       recognitionRef.current = recognition;
     }
   }, []);
@@ -119,7 +128,7 @@ function Interview() {
       <Header title="Live Interview Session" sub="Your AI Twin is ready. Please ensure your camera and microphone are on." />
 
       <div className="grid lg:grid-cols-[1fr_350px] gap-6 mt-8">
-        
+
         {/* Main Video Area */}
         <BentoCard className="p-0 overflow-hidden flex flex-col bg-slate-50 border border-slate-200 shadow-xl">
           <div className="relative flex-1 min-h-[460px] bg-slate-900 overflow-hidden rounded-t-[23px]">
@@ -127,23 +136,22 @@ function Interview() {
             {!isStreamActive && (
               <div className="absolute inset-0 grid place-items-center">
                 <div className="relative h-32 w-32 rounded-full bg-gradient-to-br from-[#6C63FF] to-[#A855F7] shadow-xl flex items-center justify-center">
-                   <User className="h-12 w-12 text-white" />
-                   <div className="absolute inset-0 rounded-full border-2 border-white/20 animate-pulse" />
+                  <User className="h-12 w-12 text-white" />
+                  <div className="absolute inset-0 rounded-full border-2 border-white/20 animate-pulse" />
                 </div>
               </div>
             )}
-            
+
             {/* Webcam Stream */}
             <video
               ref={videoRef}
               autoPlay
               playsInline
               muted
-              className={`absolute bottom-6 right-6 h-48 w-36 rounded-2xl object-cover shadow-2xl border-2 border-white/10 ${
-                isStreamActive ? "opacity-100" : "opacity-0"
-              }`}
+              className={`absolute bottom-6 right-6 h-48 w-36 rounded-2xl object-cover shadow-2xl border-2 border-white/10 ${isStreamActive ? "opacity-100" : "opacity-0"
+                }`}
             />
-            
+
             {/* Top HUD */}
             <div className="absolute top-6 left-6 right-6 flex items-start justify-between">
               <div className="flex items-center gap-2 rounded-full bg-black/40 backdrop-blur-md px-4 py-2 text-xs font-semibold text-white shadow-sm border border-white/10">
@@ -157,22 +165,21 @@ function Interview() {
             {/* Question Overlay */}
             <div className="absolute bottom-6 left-6 max-w-lg rounded-2xl bg-black/40 backdrop-blur-md p-6 border border-white/10 shadow-lg">
               <div className="text-xs font-semibold text-[#A855F7] uppercase tracking-wider">
-                Question {qi + 1} of {QUESTIONS.length}
+                Question {qi + 1} of {5}
               </div>
               <div className="mt-2 text-xl font-medium text-white leading-snug">
-                {QUESTIONS[qi]}
+                {isLoadingQ ? "Loading..." : currentQuestion}
               </div>
             </div>
           </div>
-          
+
           {/* Controls */}
           <div className="h-24 bg-white px-8 flex items-center justify-between border-t border-slate-200 rounded-b-[23px]">
             <div className="flex items-center gap-4">
-              <button 
+              <button
                 onClick={toggleSpeak}
-                className={`flex h-12 w-12 items-center justify-center rounded-full transition-colors ${
-                  isListening ? "bg-[#EF4444] text-white hover:bg-[#DC2626] shadow-lg shadow-[#EF4444]/30" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
+                className={`flex h-12 w-12 items-center justify-center rounded-full transition-colors ${isListening ? "bg-[#EF4444] text-white hover:bg-[#DC2626] shadow-lg shadow-[#EF4444]/30" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
               >
                 {isListening ? <StopCircle className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
               </button>
@@ -181,11 +188,12 @@ function Interview() {
               </button>
             </div>
             <div className="flex items-center gap-4">
-              {qi < QUESTIONS.length - 1 ? (
+              {true ? (
                 <button
                   onClick={() => {
                     setQi(q => q + 1);
                     setTranscript("");
+                    loadNextQuestion();
                   }}
                   className="flex items-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800 shadow-md transition-colors"
                 >
