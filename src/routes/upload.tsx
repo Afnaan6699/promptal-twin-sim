@@ -1,36 +1,34 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileText, Briefcase, Target, ArrowRight, CheckCircle2, Zap } from "lucide-react";
-import { HoloCard } from "@/components/HoloCard";
-import { Typewriter } from "@/components/Typewriter";
+import { Upload, FileText, Briefcase, Target, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
+import { BentoCard } from "@/components/BentoCard";
 
 export const Route = createFileRoute("/upload")({
   component: UploadPage,
   head: () => ({
     meta: [
       { title: "Upload · Promptal AI" },
-      { name: "description", content: "Drop your resume and job description into the neural ingester." },
+      { name: "description", content: "Upload your resume and job description." },
     ],
   }),
 });
 
 const STAGES = [
-  "Initializing ingestion lattice…",
-  "Analyzing candidate DNA…",
-  "Parsing skills…",
-  "Mapping job intent…",
-  "Creating interview universe…",
-  "Twin compiled. Ready.",
+  "Extracting candidate experience...",
+  "Analyzing skill gaps...",
+  "Mapping to job requirements...",
+  "Calibrating interview difficulty...",
+  "Ready for Simulation.",
 ];
 
 function UploadPage() {
-  const [resume, setResume] = useState(false);
-  const [jd, setJd] = useState(false);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [jdText, setJdText] = useState("");
   const [role, setRole] = useState("");
   const [scanning, setScanning] = useState(false);
   const [stage, setStage] = useState(0);
-  const ready = resume && jd && role.trim().length > 1;
+  const ready = resumeFile !== null && jdText.trim().length > 10 && role.trim().length > 1;
 
   useEffect(() => {
     if (!scanning) return;
@@ -41,7 +39,7 @@ function UploadPage() {
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 pb-24">
-      <Header step="02" title="Holographic Ingestion" sub="Feed the neural core. Resume. JD. Role." />
+      <Header title="Profile Setup" sub="Provide your resume and job details to personalize the AI Twin." />
 
       <AnimatePresence mode="wait">
         {!scanning ? (
@@ -50,120 +48,114 @@ function UploadPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="grid lg:grid-cols-3 gap-5"
+            className="grid lg:grid-cols-4 gap-6"
           >
+            {/* Card 1: Resume */}
             <DropTile
               icon={FileText}
               label="Resume"
-              hint=".pdf · .docx"
-              done={resume}
-              onClick={() => setResume(true)}
+              hint="PDF or DOCX (Max 5MB)"
+              done={resumeFile !== null}
+              onFileSelect={setResumeFile}
+              accept=".pdf,.docx,.doc"
+              className="lg:col-span-1"
             />
-            <DropTile
-              icon={Briefcase}
-              label="Job Description"
-              hint="paste link or upload"
-              done={jd}
-              onClick={() => setJd(true)}
-            />
-            <HoloCard>
-              <div className="flex items-center justify-between">
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-pink-glow to-neon">
-                  <Target className="h-5 w-5 text-background" />
+
+            {/* Card 2: JD */}
+            <BentoCard className="lg:col-span-1 flex flex-col">
+              <div className="flex items-center gap-2">
+                <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#3B82F6]/10 text-[#3B82F6]">
+                  <Briefcase className="h-4 w-4" />
                 </div>
-                <span className="text-[10px] font-mono text-muted-foreground">TARGET.ROLE</span>
+                <h3 className="font-semibold text-slate-900">Job Description</h3>
               </div>
-              <h3 className="mt-5 font-display text-xl">Target Role</h3>
+              <textarea
+                value={jdText}
+                onChange={(e) => setJdText(e.target.value)}
+                placeholder="Paste the job description here..."
+                className="mt-4 w-full flex-1 resize-none rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#6C63FF] focus:ring-1 focus:ring-[#6C63FF] transition-all"
+              />
+            </BentoCard>
+
+            {/* Card 3: Target Role */}
+            <BentoCard className="lg:col-span-1">
+              <div className="flex items-center gap-2">
+                <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#A855F7]/10 text-[#A855F7]">
+                  <Target className="h-4 w-4" />
+                </div>
+                <h3 className="font-semibold text-slate-900">Target Role</h3>
+              </div>
               <input
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                placeholder="Senior Frontend Engineer"
-                className="mt-3 w-full rounded-xl bg-background/40 border border-white/10 px-4 py-3 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-cyan-glow/50 focus:shadow-[0_0_0_3px_oklch(0.85_0.18_200/0.15)] font-mono text-sm"
+                placeholder="e.g. Senior Frontend Engineer"
+                className="mt-4 w-full rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#6C63FF] focus:ring-1 focus:ring-[#6C63FF] transition-all"
               />
-              <div className="mt-3 flex flex-wrap gap-1.5">
+              <div className="mt-4 flex flex-wrap gap-2">
                 {["FAANG SWE", "Product Designer", "AI Engineer"].map((p) => (
                   <button
                     key={p}
                     onClick={() => setRole(p)}
-                    className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-cyan-glow px-2 py-1 rounded-md border border-white/10 hover:border-cyan-glow/40 transition-colors"
+                    className="text-xs font-medium text-slate-500 hover:text-[#6C63FF] bg-white border border-slate-200 px-3 py-1.5 rounded-full hover:border-[#6C63FF]/30 hover:bg-[#6C63FF]/5 transition-colors"
                   >
                     {p}
                   </button>
                 ))}
               </div>
-            </HoloCard>
+            </BentoCard>
 
-            <div className="lg:col-span-3 flex items-center justify-between rounded-2xl glass-strong p-5 hud-border">
-              <div className="text-sm text-muted-foreground font-mono">
-                {ready ? (
-                  <span className="text-success">● ALL SYSTEMS NOMINAL</span>
-                ) : (
-                  <span>● awaiting inputs…</span>
-                )}
+            {/* Card 4: Status & CTA */}
+            <BentoCard className="lg:col-span-1 flex flex-col justify-between bg-gradient-to-br from-[#6C63FF]/5 to-transparent border-none">
+              <div>
+                <h3 className="font-semibold text-slate-900">AI Scan Status</h3>
+                <div className="mt-4 space-y-3">
+                  <StatusRow label="Resume Uploaded" active={resumeFile !== null} />
+                  <StatusRow label="Job Description" active={jdText.trim().length > 10} />
+                  <StatusRow label="Role Defined" active={role.trim().length > 1} />
+                </div>
               </div>
               <button
                 disabled={!ready}
                 onClick={() => setScanning(true)}
-                className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-electric to-neon px-6 py-3 font-medium text-background shadow-[var(--glow-electric)] disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed"
+                className="mt-6 w-full flex items-center justify-center gap-2 rounded-xl bg-[#6C63FF] px-6 py-3.5 text-sm font-semibold text-white shadow-md disabled:opacity-50 disabled:shadow-none hover:bg-[#5a52d5] transition-colors"
               >
-                <Zap className="h-4 w-4" />
-                Initiate Neural Scan
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                Analyze Profile
+                <ArrowRight className="h-4 w-4" />
               </button>
-            </div>
+            </BentoCard>
           </motion.div>
         ) : (
           <motion.div
             key="scan"
-            initial={{ opacity: 0, scale: 0.97 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="grid lg:grid-cols-[1fr_1.1fr] gap-6"
+            className="max-w-2xl mx-auto"
           >
-            {/* scanning viz */}
-            <div className="relative aspect-square rounded-3xl glass-strong hud-border overflow-hidden">
-              <div className="absolute inset-0 grid place-items-center">
-                {[0.4, 0.6, 0.85].map((s, i) => (
-                  <div
-                    key={i}
-                    className="absolute rounded-full border border-cyan-glow/30 animate-spin-slow"
-                    style={{
-                      width: `${s * 100}%`,
-                      height: `${s * 100}%`,
-                      animationDuration: `${14 + i * 5}s`,
-                      animationDirection: i % 2 ? "reverse" : "normal",
-                    }}
-                  />
-                ))}
-                <div className="h-28 w-28 rounded-full bg-gradient-to-br from-electric to-neon shadow-[var(--glow-neon)] animate-pulse-glow" />
+            <BentoCard className="p-8">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-[#6C63FF]/10 grid place-items-center">
+                  {stage < STAGES.length - 1 ? (
+                    <Loader2 className="h-5 w-5 text-[#6C63FF] animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="h-5 w-5 text-[#10B981]" />
+                  )}
+                </div>
+                <h2 className="text-xl font-bold text-slate-900">
+                  {stage < STAGES.length - 1 ? "Analyzing Profile..." : "Analysis Complete"}
+                </h2>
               </div>
-              <div className="absolute inset-x-0 h-32 bg-gradient-to-b from-transparent via-cyan-glow/40 to-transparent animate-scan" />
-              <div className="absolute top-4 left-4 text-[10px] font-mono uppercase tracking-widest text-cyan-glow">
-                CANDIDATE.DNA · SCANNING
-              </div>
-            </div>
 
-            {/* log */}
-            <div className="rounded-3xl glass-strong p-6 hud-border">
-              <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-cyan-glow">
-                // neural log
-              </div>
-              <div className="mt-4 space-y-3 font-mono text-sm">
+              <div className="mt-8 space-y-4">
                 {STAGES.slice(0, stage + 1).map((s, i) => (
-                  <div key={i} className="flex items-center gap-2">
+                  <div key={i} className="flex items-center gap-3">
                     {i < stage ? (
-                      <CheckCircle2 className="h-4 w-4 text-success" />
+                      <CheckCircle2 className="h-5 w-5 text-[#10B981]" />
                     ) : (
-                      <span className="h-4 w-4 grid place-items-center">
-                        <span className="h-2 w-2 rounded-full bg-cyan-glow animate-pulse" />
-                      </span>
+                      <div className="h-5 w-5 rounded-full border-2 border-[#6C63FF] border-t-transparent animate-spin" />
                     )}
-                    {i === stage ? (
-                      <Typewriter text={s} speed={20} className="text-foreground" />
-                    ) : (
-                      <span className={i < stage ? "text-muted-foreground line-through" : ""}>
-                        {s}
-                      </span>
-                    )}
+                    <span className={i < stage ? "text-slate-500 font-medium" : "text-slate-900 font-semibold"}>
+                      {s}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -172,20 +164,31 @@ function UploadPage() {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-8"
+                  className="mt-8 pt-6 border-t border-slate-100"
                 >
                   <Link
                     to="/dashboard"
-                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-electric to-neon px-6 py-3 font-medium text-background shadow-[var(--glow-electric)]"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#6C63FF] px-6 py-3.5 font-semibold text-white shadow-md hover:bg-[#5a52d5] transition-colors"
                   >
-                    View Heatmap <ArrowRight className="h-4 w-4" />
+                    View Analysis Dashboard <ArrowRight className="h-4 w-4" />
                   </Link>
                 </motion.div>
               )}
-            </div>
+            </BentoCard>
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+function StatusRow({ label, active }: { label: string; active: boolean }) {
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      <div className={`grid h-5 w-5 place-items-center rounded-full ${active ? "bg-[#10B981]" : "bg-slate-200"}`}>
+        <CheckCircle2 className={`h-3 w-3 ${active ? "text-white" : "text-slate-400"}`} />
+      </div>
+      <span className={active ? "text-slate-900 font-medium" : "text-slate-500"}>{label}</span>
     </div>
   );
 }
@@ -195,74 +198,74 @@ function DropTile({
   label,
   hint,
   done,
-  onClick,
+  onFileSelect,
+  accept,
+  className = "",
 }: {
   icon: typeof Upload;
   label: string;
   hint: string;
   done: boolean;
-  onClick: () => void;
+  onFileSelect: (file: File) => void;
+  accept?: string;
+  className?: string;
 }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleClick = () => {
+    if (!done) {
+      fileInputRef.current?.click();
+    }
+  };
+
   return (
-    <HoloCard glow={done}>
-      <div className="flex items-center justify-between">
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-electric to-cyan-glow">
-          <Icon className="h-5 w-5 text-background" />
+    <BentoCard glow={done} className={className}>
+      <div className="flex items-center gap-2">
+        <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#6C63FF]/10 text-[#6C63FF]">
+          <Icon className="h-4 w-4" />
         </div>
-        <span className="text-[10px] font-mono text-muted-foreground">{label.toUpperCase()}</span>
+        <h3 className="font-semibold text-slate-900">{label}</h3>
       </div>
-      <h3 className="mt-5 font-display text-xl">{label}</h3>
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onFileSelect(file);
+        }} 
+        accept={accept}
+        className="hidden" 
+      />
       <button
-        onClick={onClick}
-        className={`mt-3 w-full rounded-xl border-2 border-dashed px-4 py-8 text-center transition-all ${
+        onClick={handleClick}
+        className={`mt-4 w-full h-[120px] rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-all ${
           done
-            ? "border-success/40 bg-success/5"
-            : "border-white/10 hover:border-cyan-glow/40 hover:bg-cyan-glow/5"
+            ? "border-[#10B981]/40 bg-[#10B981]/5"
+            : "border-slate-300 hover:border-[#6C63FF]/40 hover:bg-[#6C63FF]/5 bg-slate-50"
         }`}
       >
         {done ? (
-          <div className="flex items-center justify-center gap-2 text-success">
-            <CheckCircle2 className="h-5 w-5" />
-            <span className="font-mono text-sm">INGESTED</span>
+          <div className="flex flex-col items-center gap-2 text-[#10B981]">
+            <CheckCircle2 className="h-6 w-6" />
+            <span className="text-sm font-semibold">Uploaded</span>
           </div>
         ) : (
           <>
-            <Upload className="h-6 w-6 mx-auto text-cyan-glow" />
-            <div className="mt-2 text-sm">Drop or click to upload</div>
-            <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-1">
-              {hint}
-            </div>
+            <Upload className="h-5 w-5 text-slate-400 mb-2" />
+            <div className="text-sm font-medium text-slate-700">Drag & Drop</div>
+            <div className="text-xs text-slate-500 mt-1">{hint}</div>
           </>
         )}
       </button>
-    </HoloCard>
+    </BentoCard>
   );
 }
 
-export function Header({
-  step,
-  title,
-  sub,
-}: {
-  step: string;
-  title: string;
-  sub: string;
-}) {
+export function Header({ title, sub }: { title: string; sub: string }) {
   return (
-    <div className="mb-10 flex items-end justify-between gap-6 flex-wrap">
-      <div>
-        <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-cyan-glow">
-          // step {step}
-        </div>
-        <h1 className="mt-2 font-display text-4xl md:text-5xl font-bold">
-          {title.split(" ").slice(0, -1).join(" ")}{" "}
-          <span className="gradient-text">{title.split(" ").slice(-1)}</span>
-        </h1>
-        <p className="mt-2 text-muted-foreground">{sub}</p>
-      </div>
-      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-        sequence · 07
-      </div>
+    <div className="mb-8">
+      <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{title}</h1>
+      <p className="mt-2 text-slate-600 text-lg">{sub}</p>
     </div>
   );
 }

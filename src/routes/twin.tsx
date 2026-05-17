@@ -1,32 +1,32 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { ArrowRight, Zap } from "lucide-react";
-import { HoloCard } from "@/components/HoloCard";
+import { ArrowRight, CheckCircle2, User, Building2, Brain, Zap, Target, Briefcase } from "lucide-react";
+import { BentoCard } from "@/components/BentoCard";
 import { Header } from "./upload";
 
 export const Route = createFileRoute("/twin")({
   component: TwinPage,
-  head: () => ({ meta: [{ title: "Twins · Promptal AI" }] }),
+  head: () => ({ meta: [{ title: "Choose Twin · Promptal AI" }] }),
 });
 
 const TWINS = [
-  { name: "Helena", role: "Friendly HR", emoji: "🤝", diff: "Easy", tone: "Warm", power: "Builds rapport", grad: "from-cyan-glow to-electric" },
-  { name: "Vance", role: "FAANG Interviewer", emoji: "🧠", diff: "Hard", tone: "Surgical", power: "Deep system design", grad: "from-electric to-neon" },
-  { name: "Sora", role: "Startup Founder", emoji: "🚀", diff: "Medium", tone: "Curious", power: "Ownership probes", grad: "from-neon to-pink-glow" },
-  { name: "Krieg", role: "Stress Interviewer", emoji: "⚡", diff: "Insane", tone: "Relentless", power: "Pressure spikes", grad: "from-danger to-pink-glow" },
-  { name: "Nyx", role: "Rapid-Fire", emoji: "💥", diff: "Hard", tone: "Quickfire", power: "1-min answers", grad: "from-pink-glow to-neon" },
-  { name: "Mara", role: "Behavioral Expert", emoji: "🎭", diff: "Medium", tone: "Empathic", power: "STAR analysis", grad: "from-neon to-electric" },
-  { name: "Axiom", role: "DSA Expert", emoji: "🧮", diff: "Hard", tone: "Precise", power: "Algorithmic depth", grad: "from-electric to-cyan-glow" },
+  { name: "Alex", role: "HR Mentor", icon: User, diff: "Easy", style: "Warm & Supportive", spec: "Culture Fit", color: "bg-[#10B981]", light: "bg-[#10B981]/10 text-[#10B981]" },
+  { name: "David", role: "FAANG Engineer", icon: Building2, diff: "Hard", style: "Surgical & Deep", spec: "System Design", color: "bg-[#6C63FF]", light: "bg-[#6C63FF]/10 text-[#6C63FF]" },
+  { name: "Sam", role: "Startup Founder", icon: Zap, diff: "Medium", style: "Curious & Fast", spec: "Ownership", color: "bg-[#F59E0B]", light: "bg-[#F59E0B]/10 text-[#F59E0B]" },
+  { name: "Sofia", role: "Stress Interviewer", icon: Target, diff: "Insane", style: "Relentless", spec: "Pressure Tests", color: "bg-[#EF4444]", light: "bg-[#EF4444]/10 text-[#EF4444]" },
+  { name: "Rahul", role: "Rapid Fire Coach", icon: Zap, diff: "Hard", style: "Quickfire", spec: "1-Min Answers", color: "bg-[#A855F7]", light: "bg-[#A855F7]/10 text-[#A855F7]" },
+  { name: "Khan", role: "Behavior Expert", icon: Brain, diff: "Medium", style: "Empathic", spec: "STAR Method", color: "bg-[#3B82F6]", light: "bg-[#3B82F6]/10 text-[#3B82F6]" },
 ];
 
 function TwinPage() {
   const [sel, setSel] = useState<number | null>(null);
+  
   return (
     <div className="mx-auto max-w-[1400px] px-6 pb-24">
-      <Header step="04" title="Choose Your Interview Twin" sub="Each twin is a personality, a difficulty curve, and a weapon." />
+      <Header title="Choose Your Interview Twin" sub="Select an AI interviewer tailored to your specific preparation needs." />
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
         {TWINS.map((t, i) => {
           const active = sel === i;
           return (
@@ -36,35 +36,36 @@ function TwinPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className={`text-left rounded-2xl glass-strong p-5 transition-all hover:-translate-y-1 relative overflow-hidden group ${
-                active ? "neon-border-glow ring-1 ring-cyan-glow/60" : ""
+              className={`text-left rounded-3xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl relative overflow-hidden group bg-white/80 backdrop-blur-2xl border ${
+                active ? "border-[#6C63FF] shadow-lg shadow-[#6C63FF]/20 ring-1 ring-[#6C63FF]" : "border-slate-200 shadow-sm"
               }`}
             >
-              <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-gradient-to-br opacity-30 blur-2xl group-hover:opacity-50 transition-opacity"
-                style={{ backgroundImage: `linear-gradient(135deg, var(--electric), var(--neon))` }}
-              />
-              <div className={`relative h-20 w-20 rounded-2xl bg-gradient-to-br ${t.grad} grid place-items-center text-4xl shadow-[var(--glow-electric)]`}>
-                <span>{t.emoji}</span>
-                <span className="absolute inset-0 rounded-2xl border border-white/30 animate-pulse-glow" />
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-4">
+                  <div className={`grid h-14 w-14 place-items-center rounded-2xl ${t.light}`}>
+                    <t.icon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-xl font-bold text-slate-900">{t.name}</h3>
+                    <div className="text-sm font-medium text-slate-500">{t.role}</div>
+                  </div>
+                </div>
+                {active && (
+                  <CheckCircle2 className="h-6 w-6 text-[#6C63FF]" />
+                )}
               </div>
-              <div className="mt-4 text-[10px] font-mono uppercase tracking-widest text-cyan-glow">
-                TWIN.{String(i + 1).padStart(2, "0")}
-              </div>
-              <h3 className="mt-1 font-display text-xl">{t.name}</h3>
-              <div className="text-sm text-muted-foreground">{t.role}</div>
 
-              <div className="mt-4 grid grid-cols-3 gap-2 text-[10px] font-mono uppercase tracking-wider">
-                <Stat label="DIFF" value={t.diff} />
-                <Stat label="TONE" value={t.tone} />
-                <Stat label="POWER" value={t.power} />
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <Stat label="Difficulty" value={t.diff} />
+                <Stat label="Speciality" value={t.spec} />
+                <div className="col-span-2">
+                  <Stat label="Interview Style" value={t.style} />
+                </div>
               </div>
 
               {active && (
-                <div className="mt-4 flex items-center gap-2 text-xs font-mono text-cyan-glow">
-                  <Zap className="h-3 w-3" /> BOOTING…
-                  <div className="ml-auto h-1 flex-1 max-w-[80px] rounded-full bg-white/10 overflow-hidden">
-                    <motion.div initial={{ width: 0 }} animate={{ width: "100%" }} transition={{ duration: 1.5 }} className="h-full bg-gradient-to-r from-electric to-neon" />
-                  </div>
+                <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2 text-sm font-semibold text-[#6C63FF]">
+                  <Zap className="h-4 w-4" /> Selected
                 </div>
               )}
             </motion.button>
@@ -72,14 +73,14 @@ function TwinPage() {
         })}
       </div>
 
-      <div className="mt-8 flex justify-end">
+      <div className="mt-12 flex justify-end">
         <Link
           to="/interview"
-          className={`inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-electric to-neon px-6 py-3 font-medium text-background shadow-[var(--glow-electric)] ${
-            sel === null ? "opacity-40 pointer-events-none" : ""
+          className={`inline-flex items-center gap-2 rounded-xl bg-[#6C63FF] px-8 py-4 font-semibold text-white shadow-lg shadow-[#6C63FF]/30 hover:-translate-y-0.5 hover:shadow-xl hover:bg-[#5a52d5] transition-all ${
+            sel === null ? "opacity-50 pointer-events-none shadow-none" : ""
           }`}
         >
-          Enter Interview Room <ArrowRight className="h-4 w-4" />
+          Enter Live Session <ArrowRight className="h-5 w-5" />
         </Link>
       </div>
     </div>
@@ -88,9 +89,9 @@ function TwinPage() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md glass px-2 py-1.5">
-      <div className="text-[8px] text-muted-foreground">{label}</div>
-      <div className="text-foreground truncate text-[10px]">{value}</div>
+    <div className="rounded-xl bg-slate-50 border border-slate-100 px-3 py-2">
+      <div className="text-xs font-semibold text-slate-500">{label}</div>
+      <div className="text-sm font-medium text-slate-900 mt-0.5 truncate">{value}</div>
     </div>
   );
 }

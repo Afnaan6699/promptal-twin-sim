@@ -1,13 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { ArrowRight, TrendingUp, Code2, MessageSquare, Sparkles, Target } from "lucide-react";
-import { HoloCard } from "@/components/HoloCard";
+import { ArrowRight, TrendingUp, Code2, MessageSquare, Sparkles, Target, Brain } from "lucide-react";
+import { BentoCard } from "@/components/BentoCard";
 import { CircleScore } from "@/components/CircleScore";
 import { Header } from "./upload";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
-  head: () => ({ meta: [{ title: "Heatmap · Promptal AI" }] }),
+  head: () => ({ meta: [{ title: "Analysis · Promptal AI" }] }),
 });
 
 const SKILLS = [
@@ -20,10 +20,10 @@ const SKILLS = [
 ];
 
 const SCORES = [
-  { v: 82, l: "Technical", c: "electric" as const },
-  { v: 65, l: "Communication", c: "neon" as const },
-  { v: 58, l: "Confidence", c: "pink-glow" as const },
-  { v: 74, l: "Role Match", c: "cyan-glow" as const },
+  { v: 82, l: "Technical", c: "brand-primary" },
+  { v: 65, l: "Communication", c: "brand-secondary" },
+  { v: 58, l: "Confidence", c: "brand-accent" },
+  { v: 74, l: "Role Match", c: "success" },
 ];
 
 // Radar polygon
@@ -33,21 +33,23 @@ const RADAR_DATA = [82, 65, 70, 60, 58, 74];
 function Dashboard() {
   return (
     <div className="mx-auto max-w-[1400px] px-6 pb-24">
-      <Header step="03" title="Candidate Heatmap" sub="Your readiness, visualized. Everything pulses." />
+      <div className="flex items-end justify-between mb-8">
+        <Header title="Candidate Insights Dashboard" sub="AI-powered analysis of your readiness for the target role." />
+      </div>
 
-      <div className="grid lg:grid-cols-[1.3fr_1fr] gap-5">
+      <div className="grid lg:grid-cols-[1.3fr_1fr] gap-6">
         {/* Score grid */}
-        <HoloCard glow>
+        <BentoCard glow className="bg-white/80">
           <div className="flex items-center justify-between">
-            <div>
-              <div className="text-[10px] font-mono uppercase tracking-widest text-cyan-glow">
-                INTERVIEW.READINESS
+            <div className="flex items-center gap-2">
+              <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#6C63FF]/10 text-[#6C63FF]">
+                <Brain className="h-4 w-4" />
               </div>
-              <h3 className="mt-1 font-display text-2xl">Cognitive Diagnostics</h3>
+              <h3 className="font-display text-xl font-bold text-slate-900">Cognitive Diagnostics</h3>
             </div>
             <div className="text-right">
-              <div className="font-display text-3xl gradient-text">68%</div>
-              <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              <div className="font-display text-3xl font-bold text-[#6C63FF]">68%</div>
+              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Hiring Probability
               </div>
             </div>
@@ -57,35 +59,37 @@ function Dashboard() {
               <CircleScore key={s.l} value={s.v} label={s.l} color={s.c} />
             ))}
           </div>
-        </HoloCard>
+        </BentoCard>
 
         {/* Radar */}
-        <HoloCard>
-          <div className="text-[10px] font-mono uppercase tracking-widest text-cyan-glow">
-            // radar map
+        <BentoCard className="bg-white/80">
+          <div className="flex items-center gap-2">
+            <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#A855F7]/10 text-[#A855F7]">
+              <Target className="h-4 w-4" />
+            </div>
+            <h3 className="font-display text-xl font-bold text-slate-900">Skill Lattice</h3>
           </div>
-          <h3 className="mt-1 font-display text-2xl">Skill Lattice</h3>
-          <div className="mt-2 grid place-items-center">
+          <div className="mt-4 grid place-items-center">
             <Radar values={RADAR_DATA} axes={RADAR_AXES} />
           </div>
-        </HoloCard>
+        </BentoCard>
 
         {/* Skill matrix */}
-        <HoloCard className="lg:col-span-2">
+        <BentoCard className="lg:col-span-2 bg-white/80">
           <div className="flex items-center justify-between">
-            <div>
-              <div className="text-[10px] font-mono uppercase tracking-widest text-cyan-glow">
-                // skill matrix
+            <div className="flex items-center gap-2">
+              <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#3B82F6]/10 text-[#3B82F6]">
+                <Code2 className="h-4 w-4" />
               </div>
-              <h3 className="mt-1 font-display text-2xl">Resume vs Job Description</h3>
+              <h3 className="font-display text-xl font-bold text-slate-900">Resume vs Job Description</h3>
             </div>
-            <div className="hidden md:flex gap-2 text-[10px] font-mono uppercase tracking-widest">
-              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-electric"/> strong</span>
-              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-neon"/> partial</span>
-              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-danger"/> gap</span>
+            <div className="hidden md:flex gap-4 text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#6C63FF]"/> Strong</span>
+              <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#3B82F6]"/> Partial</span>
+              <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#EF4444]"/> Gap</span>
             </div>
           </div>
-          <div className="mt-6 space-y-3">
+          <div className="mt-8 space-y-4">
             {SKILLS.map((s, i) => (
               <motion.div
                 key={s.name}
@@ -95,8 +99,8 @@ function Dashboard() {
                 transition={{ delay: i * 0.05 }}
                 className="grid grid-cols-[140px_1fr_50px] items-center gap-4"
               >
-                <div className="font-mono text-sm">{s.name}</div>
-                <div className="relative h-2 rounded-full bg-white/5 overflow-hidden">
+                <div className="text-sm font-medium text-slate-700">{s.name}</div>
+                <div className="relative h-2.5 rounded-full bg-slate-100 overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     whileInView={{ width: `${s.level}%` }}
@@ -104,33 +108,32 @@ function Dashboard() {
                     transition={{ duration: 1.2, ease: "easeOut" }}
                     className={`h-full rounded-full ${
                       s.level > 70
-                        ? "bg-gradient-to-r from-electric to-cyan-glow shadow-[0_0_12px_var(--electric)]"
+                        ? "bg-[#6C63FF]"
                         : s.level > 50
-                        ? "bg-gradient-to-r from-neon to-pink-glow shadow-[0_0_12px_var(--neon)]"
-                        : "bg-gradient-to-r from-danger to-pink-glow shadow-[0_0_12px_var(--danger)]"
+                        ? "bg-[#3B82F6]"
+                        : "bg-[#EF4444]"
                     }`}
                   />
                 </div>
-                <div className="text-right font-mono text-xs text-muted-foreground">{s.level}%</div>
+                <div className="text-right text-xs font-semibold text-slate-500">{s.level}%</div>
               </motion.div>
             ))}
           </div>
-        </HoloCard>
+        </BentoCard>
 
         {/* Strengths */}
-        <Mini icon={Sparkles} title="Strengths" items={["React mastery", "Clean code", "Product thinking"]} c="electric" />
-        <Mini icon={Code2} title="Tech Stack" items={["React", "Node", "TypeScript", "Postgres"]} c="cyan-glow" />
-        <Mini icon={MessageSquare} title="Watch-outs" items={["System design depth", "Verbose answers", "DSA recall"]} c="pink-glow" />
+        <Mini icon={Sparkles} title="Strengths" items={["React mastery", "Clean code", "Product thinking"]} c="brand-primary" />
+        <Mini icon={Code2} title="Tech Stack" items={["React", "Node", "TypeScript", "Postgres"]} c="brand-secondary" />
+        <Mini icon={MessageSquare} title="Watch-outs" items={["System design depth", "Verbose answers", "DSA recall"]} c="brand-accent" />
         <Mini icon={Target} title="Missing for Role" items={["Docker", "System Design", "Leadership"]} c="danger" />
-        <Mini icon={TrendingUp} title="Experience" items={["3.5 yrs", "Mid-Senior", "0 FAANG"]} c="neon" />
       </div>
 
-      <div className="mt-8 flex justify-end">
+      <div className="mt-10 flex justify-end">
         <Link
           to="/twin"
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-electric to-neon px-6 py-3 font-medium text-background shadow-[var(--glow-electric)]"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#6C63FF] px-8 py-4 font-semibold text-white shadow-lg shadow-[#6C63FF]/30 hover:-translate-y-0.5 hover:shadow-xl transition-all"
         >
-          Materialize Your Twin <ArrowRight className="h-4 w-4" />
+          Choose Interview Twin <ArrowRight className="h-5 w-5" />
         </Link>
       </div>
     </div>
@@ -138,11 +141,11 @@ function Dashboard() {
 }
 
 const COLOR_TILE: Record<string, string> = {
-  electric: "bg-electric/20 border-electric/40 text-electric",
-  neon: "bg-neon/20 border-neon/40 text-neon",
-  "cyan-glow": "bg-cyan-glow/20 border-cyan-glow/40 text-cyan-glow",
-  "pink-glow": "bg-pink-glow/20 border-pink-glow/40 text-pink-glow",
-  danger: "bg-danger/20 border-danger/40 text-danger",
+  "brand-primary": "bg-[#6C63FF]/10 text-[#6C63FF]",
+  "brand-secondary": "bg-[#A855F7]/10 text-[#A855F7]",
+  "brand-accent": "bg-[#3B82F6]/10 text-[#3B82F6]",
+  "success": "bg-[#10B981]/10 text-[#10B981]",
+  "danger": "bg-[#EF4444]/10 text-[#EF4444]",
 };
 
 function Mini({
@@ -154,27 +157,27 @@ function Mini({
   icon: typeof Sparkles;
   title: string;
   items: string[];
-  c: "electric" | "neon" | "cyan-glow" | "pink-glow" | "danger";
+  c: "brand-primary" | "brand-secondary" | "brand-accent" | "success" | "danger";
 }) {
   return (
-    <HoloCard>
+    <BentoCard className="bg-white/80">
       <div className="flex items-center gap-2">
-        <div className={`grid h-8 w-8 place-items-center rounded-lg border ${COLOR_TILE[c]}`}>
+        <div className={`grid h-8 w-8 place-items-center rounded-lg ${COLOR_TILE[c]}`}>
           <Icon className="h-4 w-4" />
         </div>
-        <div className="font-display text-lg">{title}</div>
+        <div className="font-display text-lg font-bold text-slate-900">{title}</div>
       </div>
-      <div className="mt-4 flex flex-wrap gap-1.5">
+      <div className="mt-4 flex flex-wrap gap-2">
         {items.map((i) => (
           <span
             key={i}
-            className="rounded-full glass px-3 py-1 text-xs font-mono"
+            className="rounded-full bg-slate-50 border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm"
           >
             {i}
           </span>
         ))}
       </div>
-    </HoloCard>
+    </BentoCard>
   );
 }
 
@@ -194,8 +197,8 @@ function Radar({ values, axes }: { values: number[]; axes: string[] }) {
     <svg width={size} height={size}>
       <defs>
         <linearGradient id="rg" x1="0" x2="1" y1="0" y2="1">
-          <stop offset="0%" stopColor="oklch(0.72 0.22 260)" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="oklch(0.68 0.25 310)" stopOpacity="0.6" />
+          <stop offset="0%" stopColor="#6C63FF" stopOpacity="0.8" />
+          <stop offset="100%" stopColor="#A855F7" stopOpacity="0.8" />
         </linearGradient>
       </defs>
       {[0.25, 0.5, 0.75, 1].map((f) => (
@@ -203,23 +206,23 @@ function Radar({ values, axes }: { values: number[]; axes: string[] }) {
           key={f}
           points={Array.from({ length: N }, (_, i) => pt(i, f * 100).join(",")).join(" ")}
           fill="none"
-          stroke="oklch(1 0 0 / 0.08)"
+          stroke="#E2E8F0"
         />
       ))}
       {Array.from({ length: N }, (_, i) => {
         const [x, y] = pt(i, 100);
-        return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="oklch(1 0 0 / 0.06)" />;
+        return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="#E2E8F0" />;
       })}
-      <polygon points={poly} fill="url(#rg)" stroke="oklch(0.85 0.18 200)" strokeWidth={1.5} style={{ filter: "drop-shadow(0 0 8px var(--electric))" }} />
+      <polygon points={poly} fill="url(#rg)" stroke="#6C63FF" strokeWidth={2} style={{ filter: "drop-shadow(0 4px 10px rgba(108,99,255,0.3))" }} />
       {values.map((_, i) => {
         const [x, y] = pt(i, 100);
         const a = (Math.PI * 2 * i) / N - Math.PI / 2;
-        const lx = cx + Math.cos(a) * (R + 14);
-        const ly = cy + Math.sin(a) * (R + 14);
+        const lx = cx + Math.cos(a) * (R + 16);
+        const ly = cy + Math.sin(a) * (R + 16);
         return (
           <g key={i}>
-            <circle cx={x} cy={y} r={3} fill="var(--cyan-glow)" />
-            <text x={lx} y={ly} textAnchor="middle" dy="0.35em" className="fill-muted-foreground font-mono" fontSize="10">
+            <circle cx={x} cy={y} r={4} fill="#6C63FF" stroke="white" strokeWidth={1.5} />
+            <text x={lx} y={ly} textAnchor="middle" dy="0.35em" className="fill-slate-600 font-medium" fontSize="11">
               {axes[i]}
             </text>
           </g>

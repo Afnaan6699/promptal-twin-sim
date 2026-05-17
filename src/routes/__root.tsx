@@ -13,6 +13,7 @@ import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
 import { Atmosphere } from "@/components/Atmosphere";
+import { AuthProvider } from "@/hooks/useAuth";
 import { HudShell } from "@/components/HudShell";
 
 function NotFoundComponent() {
@@ -152,10 +153,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Atmosphere />
-      <HudShell>
-        <Outlet />
-      </HudShell>
+      <AuthProvider>
+        <Atmosphere />
+        <HudShell>
+          <Outlet />
+        </HudShell>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
