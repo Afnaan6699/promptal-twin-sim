@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { ArrowRight, Bot, Mic, Radio, RotateCcw, StopCircle, Video, Volume2 } from "lucide-react";
+import { ArrowRight, Bot, Mic, Radio, RotateCcw, StopCircle, Video, Volume2, VolumeX } from "lucide-react";
 import { BentoCard } from "@/components/BentoCard";
 import { Header } from "./upload";
 import { AIAvatar } from "@/components/AIAvatar";
@@ -377,15 +377,25 @@ function Interview() {
                 <Video className="h-5 w-5" />
               </button>
               <button
-                onClick={() => speakText(currentQuestion.question)}
-                disabled={isThinking}
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors disabled:opacity-40"
-                title="Replay question voice"
+                onClick={() => {
+                  if (isAiSpeaking) {
+                    window.speechSynthesis.cancel();
+                    setIsAiSpeaking(false);
+                  } else {
+                    speakText(currentQuestion.question);
+                  }
+                }}
+                className={`flex h-12 w-12 items-center justify-center rounded-full transition-colors ${
+                  isAiSpeaking
+                    ? "bg-[#EF4444] text-white hover:bg-[#DC2626] shadow-lg shadow-[#EF4444]/30"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+                title={isAiSpeaking ? "Stop AI speaking" : "Replay question"}
               >
-                <Volume2 className="h-5 w-5" />
+                {isAiSpeaking ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
               </button>
               <div className="text-sm font-medium text-slate-500">
-                {isListening ? "Listening to your answer..." : isEvaluating ? "Scoring answer..." : complete ? "Session complete" : "Press mic to answer"}
+                {isListening ? "Listening to your answer..." : isAiSpeaking ? "AI is speaking — click 🔇 to stop" : isEvaluating ? "Analyzing answer..." : complete ? "Session complete" : "Press mic to answer"}
               </div>
             </div>
             {complete ? (
