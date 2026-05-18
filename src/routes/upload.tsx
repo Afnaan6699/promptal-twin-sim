@@ -23,6 +23,87 @@ const STAGES = [
   "Ready for Simulation.",
 ];
 
+function scoreFromText(text: string, terms: string[], base = 48) {
+  const haystack = text.toLowerCase();
+  const hits = terms.filter((term) => haystack.includes(term.toLowerCase())).length;
+  return Math.min(94, base + hits * 8);
+}
+
+function extractSkillHints(jd: string) {
+  const known = [
+    "React",
+    "TypeScript",
+    "JavaScript",
+    "Node.js",
+    "Python",
+    "Java",
+    "SQL",
+    "MongoDB",
+    "AWS",
+    "Docker",
+    "Kubernetes",
+    "Machine Learning",
+    "LLM",
+    "API",
+    "System Design",
+    "Communication",
+  ];
+  const matched = known.filter((skill) => jd.toLowerCase().includes(skill.toLowerCase()));
+  return (matched.length ? matched : ["React", "API", "Communication", "System Design", "Problem Solving", "Ownership"]).slice(0, 6);
+}
+
+function localProfileAnalysis({ jd, role, resumeName }: { jd: string; role: string; resumeName: string }) {
+  const skillHints = extractSkillHints(`${jd} ${role} ${resumeName}`);
+  const technical = scoreFromText(`${jd} ${role}`, ["react", "typescript", "api", "system", "database", "cloud", "ai", "machine"], 54);
+  const communication = scoreFromText(jd, ["stakeholder", "communication", "collaborate", "present", "client"], 58);
+  const roleMatch = scoreFromText(`${jd} ${role}`, role.split(/\s+/).filter(Boolean), 60);
+  const confidence = Math.round((technical + communication + roleMatch) / 3) - 4;
+
+  return {
+    hiringProbability: Math.max(52, Math.min(91, Math.round((technical + communication + roleMatch) / 3))),
+    scores: [
+      { l: "Technical", v: technical },
+      { l: "Communication", v: communication },
+      { l: "Confidence", v: confidence },
+      { l: "Role Match", v: roleMatch },
+    ],
+    radarData: [
+      technical,
+      communication,
+      Math.max(45, technical - 8),
+      Math.max(50, communication + 4),
+      Math.max(46, confidence),
+      roleMatch,
+    ],
+    skills: skillHints.map((name, index) => ({
+      name,
+      level: Math.max(42, Math.min(92, technical - index * 5 + (index % 2) * 6)),
+    })),
+    strengths: [
+      `Relevant preparation for ${role}`,
+      "Clear role intent from the job description",
+      "Good foundation for targeted mock interviews",
+    ],
+    techStack: skillHints.slice(0, 4),
+    watchOuts: [
+      "Add quantified project outcomes",
+      "Prepare deeper trade-off explanations",
+      "Practice concise spoken answers",
+    ],
+    missingForRole: skillHints.slice(-3).map((skill) => `Prove hands-on depth in ${skill}`),
+    source: "local-fallback",
+  };
+}
+
+function withTimeout<T>(promiseFactory: () => Promise<T>, fallback: T, ms = 45000): Promise<T> {
+  return Promise.race([
+    Promise.resolve().then(promiseFactory).catch(() => fallback),
+    new Promise<T>((resolve) => {
+      window.setTimeout(() => resolve(fallback), ms);
+    }),
+  ]);
+}
+
 function UploadPage() {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [jdText, setJdText] = useState("");
@@ -47,19 +128,44 @@ function UploadPage() {
       formData.append("jd", jdText);
       formData.append("role", role);
 
-      const result = await analyzeProfile({ data: formData });
+      const fallback = localProfileAnalysis({ jd: jdText, role, resumeName: resumeFile.name });
+      const result = await withTimeout(() => analyzeProfile({ data: formData }), fallback);
       
       clearInterval(progressInterval);
       setStage(STAGES.length - 1); // "Analysis Complete"
 
       // Store the result globally
       sessionStorage.setItem("ai_analysis_result", JSON.stringify(result));
+      sessionStorage.setItem(
+        "ai_interview_context",
+        JSON.stringify({
+          role,
+          jd: jdText,
+          resumeName: resumeFile.name,
+          analysis: result,
+        }),
+      );
+      sessionStorage.removeItem("ai_interview_session");
+      if ((result as any).source === "local-fallback") {
+        toast.info("Analysis generated locally. Add a Gemini API key for deeper resume parsing.");
+      }
     } catch (error: any) {
+      const fallback = localProfileAnalysis({ jd: jdText, role, resumeName: resumeFile.name });
+      sessionStorage.setItem("ai_analysis_result", JSON.stringify(fallback));
+      sessionStorage.setItem(
+        "ai_interview_context",
+        JSON.stringify({
+          role,
+          jd: jdText,
+          resumeName: resumeFile.name,
+          analysis: fallback,
+        }),
+      );
+      sessionStorage.removeItem("ai_interview_session");
       clearInterval(progressInterval);
-      setScanning(false);
-      setStage(0);
+      setStage(STAGES.length - 1);
       console.error(error);
-      toast.error(error.message || "Failed to analyze profile.");
+      toast.info("AI service was unavailable, so a local analysis was generated for the demo.");
     }
   };
 

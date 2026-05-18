@@ -21,6 +21,27 @@ const TWINS = [
 
 function TwinPage() {
   const [sel, setSel] = useState<number | null>(null);
+
+  const selectTwin = (index: number) => {
+    setSel(index);
+    const twin = TWINS[index];
+    const savedContext = sessionStorage.getItem("ai_interview_context");
+    const context = savedContext ? JSON.parse(savedContext) : {};
+
+    sessionStorage.setItem(
+      "ai_interview_context",
+      JSON.stringify({
+        ...context,
+        twin: {
+          name: twin.name,
+          role: twin.role,
+          difficulty: twin.diff,
+          style: twin.style,
+          speciality: twin.spec,
+        },
+      }),
+    );
+  };
   
   return (
     <div className="mx-auto max-w-[1400px] px-6 pb-24">
@@ -32,7 +53,7 @@ function TwinPage() {
           return (
             <motion.button
               key={t.name}
-              onClick={() => setSel(i)}
+              onClick={() => selectTwin(i)}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}

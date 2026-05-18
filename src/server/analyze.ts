@@ -4,6 +4,10 @@ import { promises as fs } from "fs";
 import path from "path";
 import os from "os";
 
+function extractJson(text: string) {
+  return text.replace(/```json/g, "").replace(/```/g, "").trim();
+}
+
 export const analyzeProfile = createServerFn({ method: "POST" }).handler(
   async ({ data }) => {
     try {
@@ -68,12 +72,22 @@ Output the analysis strictly as a JSON object matching this schema exactly. Do N
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: [
-          uploadResponse,
-          prompt
+          {
+            role: "user",
+            parts: [
+              {
+                fileData: {
+                  fileUri: uploadResponse.uri,
+                  mimeType: uploadResponse.mimeType || file.type || "application/pdf",
+                },
+              },
+              { text: prompt },
+            ],
+          },
         ],
         config: {
           responseMimeType: "application/json",
-        }
+        },
       });
 
       // Cleanup temp file
@@ -83,7 +97,7 @@ Output the analysis strictly as a JSON object matching this schema exactly. Do N
          throw new Error("No response from AI");
       }
 
-      const jsonStr = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+      const jsonStr = extractJson(response.text);
       return JSON.parse(jsonStr);
 
     } catch (err: any) {
